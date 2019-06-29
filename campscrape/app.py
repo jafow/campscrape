@@ -70,7 +70,7 @@ def send_alert(msg_data, msg_type):
             msg_data["date_avail"])
 
     # send the message text to slack
-    # send = requests.post(config.CHANNEL_ENDPOINT, json={"text": msg_text})
+    send = requests.post(config.CHANNEL_ENDPOINT, json={"text": msg_text})
     logger.info("Sent message: {}".format(msg_text))
     # if not send.ok:
     if False:
