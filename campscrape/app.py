@@ -44,7 +44,7 @@ HEADERS = {
     "Accept-Encoding": "deflate",
     "X-Requested-With": "XMLHttpRequest",
     "Connection": "keep-alive",
-    "DNT": 1,
+    "DNT": "1",
     "Pragma": "no-cache"
 }
 
