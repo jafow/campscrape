@@ -1,0 +1,8 @@
+[flake8]
+ignore = D203
+exclude =
+    # No need to traverse our git directory
+    .git,
+    __pycache__,
+    dist
+max-line-length = 100

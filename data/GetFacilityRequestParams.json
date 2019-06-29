@@ -1,0 +1,23 @@
+{
+    "UnitAvailabilitySearchParams": {
+        "RegionId": 0,
+        "PlaceId": 680,
+        "FacilityId": 0,
+        "StartDate": "07/06/2019",
+        "Nights": "1",
+        "CategoryId": "0",
+        "UnitTypeIds": [],
+        "UnitTypesCategory": [],
+        "ShowOnlyAdaUnits": false,
+        "ShowOnlyTentSiteUnits": false,
+        "ShowOnlyRvSiteUnits": false,
+        "MinimumVehicleLength": "0",
+        "FacilityTypes_new": 0,
+        "AccessTypes": [],
+        "ShowIsPremiumUnits": false,
+        "ParkFinder": [],
+        "UnitTypeCategoryId": "0",
+        "ShowSiteUnitsName": "0",
+        "AmenitySearchParameters": []
+    }
+}
