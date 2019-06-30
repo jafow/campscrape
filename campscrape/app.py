@@ -1,10 +1,12 @@
-from enum import Enum
 import logging
 import os
 
 import requests
 
 from campscrape import config
+from campscrape.msgtype import MessageType
+from campscrape.decorators import check_cache
+
 
 # log level is one of 10, 20, 30, 40, 50
 LOG_LEVEL = os.getenv('LOG_LEVEL', logging.INFO)
@@ -49,13 +51,8 @@ HEADERS = {
 }
 
 
-class MessageType(Enum):
-    """ enum for slack message types """
-    success = 0
-    error = 1
-
-
-def send_alert(msg_data, msg_type):
+@check_cache
+def send_alert(msg_data, msg_type=MessageType.success):
     """ sends a slack message with found data """
     msg_text = ""
 
@@ -69,17 +66,28 @@ def send_alert(msg_data, msg_type):
             msg_data["num_avail"], msg_data["unit_type"], msg_data["campsite_name"],
             msg_data["date_avail"])
 
-    # send the message text to slack
-    send = requests.post(config.CHANNEL_ENDPOINT, json={"text": msg_text})
-    logger.info("Sent message: {}".format(msg_text))
-    if not send.ok:
-        # something broke
-        logger.error("Error posting to slack {}".format(send.json()))
+    if msg_type != MessageType.cached:
+        # send the message text to slack
+        send = requests.post(config.CHANNEL_ENDPOINT, json={"text": msg_text})
+        logger.debug("Sent message: {}".format(msg_text))
+        if not send.ok:
+            # something broke
+            logger.error("Error posting to slack {}".format(send.json()))
 
 
 def has_count(unit):
     """ return true if unit has count """
     return unit.get('Count', 0) > 0
+
+
+def msg_defaults():
+    """ sets default keys on message """
+    _msg_data = {}
+    _msg_data.setdefault("num_avail", 0)
+    _msg_data.setdefault("unit_type", "unknown")
+    _msg_data.setdefault("campsite_name", "missing campsite name")
+    _msg_data.setdefault("date_avail", "")
+    return _msg_data
 
 
 def main():
@@ -95,6 +103,9 @@ def main():
 
         # make the request to with the given place and date
         res = requests.post(ENDPOINT, headers=HEADERS, json=req_params)
+
+        # msg data defaults
+        msg_data = msg_defaults()
         if res.ok:
             # read the response data
             payload = res.json()
@@ -107,12 +118,12 @@ def main():
             if len(availabe_units):
                 for u in availabe_units:
                     # there is availability, alert!
-                    msg_data = {
+                    msg_data.update({
                         "num_avail": u.get("Count"),
                         "unit_type": u.get('UnitTypeName', "unknown unit type"),
                         "campsite_name": u.get("PlaceName", "missing campsite name"),
                         "date_avail": d
-                    }
+                    })
 
                     logger.info("Found {0} {1} units open at {2} on {3}".format(
                         msg_data["num_avail"],
@@ -121,12 +132,12 @@ def main():
                         msg_data["date_avail"])
                     )
 
-                    send_alert(msg_data, MessageType.success)
+                    send_alert(msg_data, msg_type=MessageType.success)
             else:
                 logging.info("No available units {}".format(u"\U0001f63f"))
         else:
             logger.error("Error requesting campsite data: {}".format(res.json()))
-            send_alert(msg_data, MessageType.error)
+            send_alert(msg_data, msg_type=MessageType.error)
 
 
 if __name__ == "__main__":
