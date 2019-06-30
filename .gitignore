@@ -125,3 +125,5 @@ dmypy.json
 
 # config
 campscrape/config.py
+# db
+campscrape.db
